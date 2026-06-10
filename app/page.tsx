@@ -173,7 +173,7 @@ export default function Home() {
 
         {/* Essentials */}
 
-        <SectionTitle title="🏠 Essentials" />
+        <SectionTitle title="🏠 Needs" />
 
         <div className="grid md:grid-cols-2 gap-4 mb-10">
           {essentials.map((item) => (
@@ -189,7 +189,7 @@ export default function Home() {
 
         {/* Lifestyle */}
 
-        <SectionTitle title="✨ Lifestyle" />
+        <SectionTitle title="✨ Wants" />
 
         <div className="grid md:grid-cols-2 gap-4">
           {lifestyle.map((item) => (
@@ -338,7 +338,8 @@ function ExpenseCard({
       </p>
 
       <p className="text-slate-500 text-xs mt-1">
-        Recommended: {item.target}% of income
+        Recommended: {item.target}% of income (In your case: 
+        ${(income * (item.target / 100)).toFixed(0)})
       </p>
     </div>
   );
