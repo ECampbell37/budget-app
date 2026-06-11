@@ -1,36 +1,175 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💸 Smart Budget
+
+A modern budgeting tool built with Next.js and Tailwind CSS that helps users track monthly income, expenses, savings, and investments while comparing spending against recommended budget targets.
+
+## 🔗 Live Demo
+
+Try Smart Budget here:
+
+[https://your-vercel-url.vercel.app](https://budget-app-smoky-zeta.vercel.app/)
+
+
+## Features
+
+### 📊 Budget Overview
+
+- Track monthly income
+- Monitor total spending
+- View remaining money after expenses
+- See remaining percentage of income
+- Visual budget usage progress bar
+
+### 🏠 Needs vs ✨ Wants
+
+Expenses are organized into two easy-to-understand categories.
+
+#### Needs
+
+- Housing
+- Food
+- Transportation
+- Insurance
+
+#### Wants
+
+- Savings
+- Investments
+- Personal Spending
+
+### 🎯 Smart Recommendations
+
+Each category includes a recommended percentage of income.
+
+Examples:
+
+- Housing: 35%
+- Food: 15%
+- Savings: 15%
+- Investments: 10%
+
+Recommendations are displayed as both:
+
+- Percentage of income
+- Dollar amount based on the user's entered income
+
+Example:
+
+```text
+Recommended: 15% of income (In your case: $630)
+```
+
+### 🚦 Visual Budget Health Indicators
+
+The app provides color-coded feedback to help users quickly identify budget imbalances.
+
+#### Spending Categories (Needs & Personal Spending)
+
+🟢 Green
+- Within recommended target
+
+🟡 Yellow
+- Slightly above target
+
+🟠 Orange
+- Moderately above target
+
+🔴 Red
+- Significantly above target
+
+#### Growth Categories (Savings & Investments)
+
+🟢 Green
+- Meeting or exceeding target
+
+🟡 Yellow
+- Slightly below target
+
+🟠 Orange
+- Moderately below target
+
+🔴 Red
+- Significantly below target
+
+### 💾 Automatic Saving
+
+Budget data is automatically saved in the browser using Local Storage.
+
+Benefits:
+
+- No account required
+- No backend required
+- No database required
+- Data persists between visits on the same device
+
+## Tech Stack
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Local Storage
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Build for Production
 
-## Learn More
+```bash
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+Run the production build locally:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+This project is optimized for deployment on Vercel.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Deploy by connecting the GitHub repository to Vercel or using:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+vercel
+```
+
+Once deployed, each user maintains their own budget data through browser Local Storage.
+
+## Future Ideas
+
+- Custom budget categories
+- Editable recommendation percentages
+- Dark/light mode toggle
+- Charts and spending breakdowns
+- Monthly budget history
+- Export to PDF or CSV
+- Account support with cloud sync
+- Mobile app version
+
+## Why I Built This
+
+Smart Budget was created as a lightweight budgeting tool that provides immediate feedback on spending habits without requiring account creation, subscriptions, or complicated setup. The goal is to help users quickly understand where their money is going and whether their spending aligns with common budgeting recommendations.
+
+## License
+
+MIT License
+
+Feel free to use, modify, and share this project.
