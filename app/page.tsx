@@ -139,7 +139,7 @@ export default function Home() {
             <span className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20 shadow-inner animate-float">
               <Wallet className="w-8 h-8" />
             </span>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent py-2">
               Smart Budget
             </h1>
           </div>
@@ -149,7 +149,7 @@ export default function Home() {
         </header>
 
         {/* 📱 MOBILE MARQUEE: Only visible on small screens (hidden md:flex) */}
-        <div className="block md:hidden w-full overflow-hidden relative bg-slate-900/40 border-y border-slate-800/60 py-3 mb-10 backdrop-blur-sm">
+        <div className="block md:hidden w-full overflow-hidden relative bg-slate-900/40 rounded-full border-y border-slate-800/60 py-3 mb-10 backdrop-blur-sm">
           <div className="flex animate-marquee-mobile gap-12 whitespace-nowrap min-w-full">
             <div className="flex shrink-0 items-center gap-12 text-slate-500/40">
               {MARQUEE_ICONS.map((Icon, idx) => <Icon key={`mob1-${idx}`} className="w-5 h-5" />)}
@@ -163,7 +163,7 @@ export default function Home() {
         </div>
 
         {/* 💻 DESKTOP MARQUEE: Hidden on mobile, flexes on desktop (hidden md:block) */}
-        <div className="hidden md:block w-full overflow-hidden relative bg-slate-900/40 border-y border-slate-800/60 py-3 mb-10 backdrop-blur-sm">
+        <div className="hidden md:block w-full overflow-hidden relative bg-slate-900/40 rounded-full border-y border-slate-800/60 py-3 mb-10 backdrop-blur-sm">
           <div className="flex w-[200%] animate-marquee gap-12 items-center">
             <div className="flex justify-around w-1/2 gap-12 text-slate-500/40 shrink-0">
               {MARQUEE_ICONS.map((Icon, idx) => <Icon key={`d1-${idx}`} className="w-5 h-5 hover:text-indigo-400 transition-colors" />)}
