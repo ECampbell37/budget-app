@@ -101,6 +101,12 @@ export default function Home() {
           0% { transform: translateX(0%); }
           100% { transform: translateX(-50%); }
         }
+        @keyframes marqueeMobile {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-100%); }
+        }
+
+        
         @keyframes progressShimmer {
           0% { background-position: 0% 0%; }
           100% { background-position: 200% 0%; }
@@ -113,6 +119,7 @@ export default function Home() {
         }
         .animate-float { animation: float 3s ease-in-out infinite; }
         .animate-marquee { animation: marquee 35s linear infinite; }
+        .animate-marquee-mobile { animation: marqueeMobile 20s linear infinite; }
         
         .animated-progress-fill {
           background-size: 200% auto !important;
@@ -141,14 +148,28 @@ export default function Home() {
           </p>
         </header>
 
-        {/* Infinite Moving Running Asset Strip */}
-        <div className="w-full overflow-hidden relative bg-slate-900/40 border-y border-slate-800/60 py-3 mb-10 backdrop-blur-sm">
-          <div className="flex w-[200%] animate-marquee gap-12 items-center">
-            <div className="flex justify-around w-1/2 gap-12 text-slate-500/40">
-              {MARQUEE_ICONS.map((Icon, idx) => <Icon key={`m1-${idx}`} className="w-5 h-5 hover:text-indigo-400 transition-colors" />)}
+        {/* 📱 MOBILE MARQUEE: Only visible on small screens (hidden md:flex) */}
+        <div className="block md:hidden w-full overflow-hidden relative bg-slate-900/40 border-y border-slate-800/60 py-3 mb-10 backdrop-blur-sm">
+          <div className="flex animate-marquee-mobile gap-12 whitespace-nowrap min-w-full">
+            <div className="flex shrink-0 items-center gap-12 text-slate-500/40">
+              {MARQUEE_ICONS.map((Icon, idx) => <Icon key={`mob1-${idx}`} className="w-5 h-5" />)}
             </div>
-            <div className="flex justify-around w-1/2 gap-12 text-slate-500/40">
-              {MARQUEE_ICONS.map((Icon, idx) => <Icon key={`m2-${idx}`} className="w-5 h-5 hover:text-indigo-400 transition-colors" />)}
+            <div className="flex shrink-0 items-center gap-12 text-slate-500/40" aria-hidden="true">
+              {MARQUEE_ICONS.map((Icon, idx) => <Icon key={`mob2-${idx}`} className="w-5 h-5" />)}
+            </div>
+          </div>
+          <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-slate-950 to-transparent pointer-events-none opacity-50" />
+          <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-slate-950 to-transparent pointer-events-none opacity-50" />
+        </div>
+
+        {/* 💻 DESKTOP MARQUEE: Hidden on mobile, flexes on desktop (hidden md:block) */}
+        <div className="hidden md:block w-full overflow-hidden relative bg-slate-900/40 border-y border-slate-800/60 py-3 mb-10 backdrop-blur-sm">
+          <div className="flex w-[200%] animate-marquee gap-12 items-center">
+            <div className="flex justify-around w-1/2 gap-12 text-slate-500/40 shrink-0">
+              {MARQUEE_ICONS.map((Icon, idx) => <Icon key={`d1-${idx}`} className="w-5 h-5 hover:text-indigo-400 transition-colors" />)}
+            </div>
+            <div className="flex justify-around w-1/2 gap-12 text-slate-500/40 shrink-0">
+              {MARQUEE_ICONS.map((Icon, idx) => <Icon key={`d2-${idx}`} className="w-5 h-5 hover:text-indigo-400 transition-colors" />)}
             </div>
           </div>
           <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-slate-950 to-transparent pointer-events-none opacity-50" />
