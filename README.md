@@ -1,6 +1,6 @@
 # 💸 Smart Budget
 
-A modern budgeting tool built with Next.js and Tailwind CSS that helps users track monthly income, expenses, savings, and investments while comparing spending against recommended budget targets.
+An easy-to-use budgeting tool built with Next.js and Tailwind CSS that helps users track monthly income, expenses, savings, and investments while comparing spending against recommended budget targets.
 
 ## 🔗 Live Demo
 
@@ -18,6 +18,7 @@ Try Smart Budget here:
 - View remaining money after expenses
 - See remaining percentage of income
 - Visual budget usage progress bar
+- Set custom recommended percentages
 
 ### 🏠 Needs vs ✨ Wants
 
@@ -25,10 +26,11 @@ Expenses are organized into two easy-to-understand categories.
 
 #### Needs
 
-- Housing
-- Food
+- Housing & Utilities
+- Food & Groceries
 - Transportation
 - Insurance
+- Debt Payments
 
 #### Wants
 
@@ -42,8 +44,8 @@ Each category includes a recommended percentage of income.
 
 Examples:
 
-- Housing: 35%
-- Food: 20%
+- Housing: 40%
+- Food: 22.5%
 - Savings: 15%
 - Investments: 5%
 
@@ -156,8 +158,8 @@ Once deployed, each user maintains their own budget data through browser Local S
 ## Future Ideas
 
 - Custom budget categories
-- Editable recommendation percentages
-- Settings tab
+- Editable recommendation percentages ✅
+- Settings tab ✅
 - Dark/light mode toggle
 - Charts and spending breakdowns
 - Monthly budget history
@@ -165,7 +167,7 @@ Once deployed, each user maintains their own budget data through browser Local S
 
 ## Why I Built This
 
-Smart Budget was created as a lightweight budgeting tool that provides immediate feedback on spending habits without requiring account creation, subscriptions, or complicated setup. The goal is to help users quickly understand where their money is going and whether their spending aligns with common budgeting recommendations.
+Smart Budget was created as a simple and free budgeting tool that provides immediate feedback on spending habits without requiring account creation, subscriptions, or any complicated setup. The goal is to help users quickly understand where their money is going and whether their spending aligns with common budgeting recommendations. I personally use this app to plan out my budget!
 
 ## License
 
