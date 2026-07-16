@@ -6,7 +6,7 @@ A modern budgeting tool built with Next.js and Tailwind CSS that helps users tra
 
 Try Smart Budget here:
 
-[https://your-vercel-url.vercel.app](https://budget-app-smoky-zeta.vercel.app/)
+[https://budget-app-smoky-zeta.vercel.app](https://budget-app-smoky-zeta.vercel.app/)
 
 
 ## Features
@@ -43,9 +43,9 @@ Each category includes a recommended percentage of income.
 Examples:
 
 - Housing: 35%
-- Food: 15%
+- Food: 20%
 - Savings: 15%
-- Investments: 10%
+- Investments: 5%
 
 Recommendations are displayed as both:
 
@@ -157,12 +157,11 @@ Once deployed, each user maintains their own budget data through browser Local S
 
 - Custom budget categories
 - Editable recommendation percentages
+- Settings tab
 - Dark/light mode toggle
 - Charts and spending breakdowns
 - Monthly budget history
 - Export to PDF or CSV
-- Account support with cloud sync
-- Mobile app version
 
 ## Why I Built This
 
