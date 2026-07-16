@@ -36,13 +36,13 @@ interface BudgetConfig {
 }
 
 const BUDGET_CONFIGS: BudgetConfig[] = [
-  { name: "Housing & Utilities", type: "Essential", target: 40, metric: "max", icon: HomeIcon, description: "Rent/mortgage, electric, water, internet, heat" },
-  { name: "Food & Groceries", type: "Essential", target: 22.5, metric: "max", icon: Utensils, description: "Everyday meals, groceries, household consumables" },
+  { name: "Housing & Utilities", type: "Essential", target: 40, metric: "max", icon: HomeIcon, description: "Rent/mortgage, electric, water, HVAC, internet, phone bills" },
+  { name: "Food & Groceries", type: "Essential", target: 22.5, metric: "max", icon: Utensils, description: "Everyday meals, groceries, household supplies" },
   { name: "Transportation", type: "Essential", target: 5, metric: "max", icon: Car, description: "Gas, maintenance, public transit, tolls, parking" },
-  { name: "Insurance", type: "Essential", target: 7.5, metric: "max", icon: ShieldCheck, description: "Health, car, home insurance costs" },
-  { name: "Debt", type: "Essential", target: 0, metric: "max", icon: CreditCard, description: "Student loans, credit cards, car loans, personal loans" },
+  { name: "Insurance", type: "Essential", target: 7.5, metric: "max", icon: ShieldCheck, description: "Health, auto, home, and other insurance premiums" },
+  { name: "Debt Payments", type: "Essential", target: 0, metric: "max", icon: CreditCard, description: "Student loans, credit cards, car loans, personal loans" },
   { name: "Savings", type: "Lifestyle", target: 15, metric: "min", icon: PiggyBank, description: "Personal savings, emergency fund, HYSA" },
-  { name: "Personal", type: "Lifestyle", target: 5, metric: "max", icon: User, description: "Subscriptions, clothes, going out, extra spending money" },
+  { name: "Personal", type: "Lifestyle", target: 5, metric: "max", icon: User, description: "Subscriptions, clothes, entertainment, hobbies" },
   { name: "Investments", type: "Lifestyle", target: 5, metric: "min", icon: TrendingUp, description: "401k, Roth IRA, Brokerage investments" },
 ];
 
