@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Budget Calculator",
-  description: "A simple calculator app to help people plan their monthly budget and lifestyle expenses",
+  description: "A simple calculator to help people plan their monthly budget and lifestyle expenses",
 };
 
 export default function RootLayout({
