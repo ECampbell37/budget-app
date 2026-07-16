@@ -1,3 +1,5 @@
+// Home Page
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -193,10 +195,10 @@ export default function Home() {
   return (
     <main className="min-h-screen relative text-slate-50 antialiased overflow-x-hidden selection:bg-indigo-500/30">
 
-      {/* Dynamic Screen Backsplash Canvas */}
+      {/* Gradient Background */}
       <div className="absolute inset-0 z-0 animate-gradient" />
 
-      {/* High-Capacity Frame Wrapper Container */}
+      {/* Primary div */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-12">
         
         {/* Main Dashboard Header */}
@@ -252,7 +254,7 @@ export default function Home() {
           <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-slate-950 to-transparent pointer-events-none opacity-50" />
         </div>
 
-        {/* Base Income Parameter Block Layout */}
+        {/* Starting Hint Pop-up */}
         <div
           className={`relative bg-slate-900 border rounded-2xl p-6 mb-8 shadow-xl backdrop-blur-sm transition-all duration-300 ${
             showIncomePrompt
@@ -300,7 +302,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Summary Metric Scoreboard Panels */}
+        {/* Row of metric cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <SummaryCard title="Income" value={`$${parsedIncome.toFixed(0)}`} icon={DollarSign} />
           <SummaryCard title="Spent" value={`$${totalSpent.toFixed(0)}`} icon={BarChart3} />
@@ -313,7 +315,7 @@ export default function Home() {
           <SummaryCard title="Remaining %" value={`${remainingPercent}%`} icon={Percent} />
         </div>
 
-        {/* Aggregated Total Tracking Row Utilization Meter */}
+        {/* Total Budget Usage Meter */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-10 shadow-xl backdrop-blur-sm">
           <div className="flex justify-between mb-3 text-lg font-medium">
             <span>Budget Usage</span>
@@ -346,7 +348,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Essentials Group Partition Blocks */}
+        {/* Essentials Group */}
         <h2 className="text-3xl font-bold mb-5 tracking-tight">🏠 Needs</h2>
         <div className="grid md:grid-cols-2 gap-4 mb-10">
           {essentials.map((item) => (
@@ -363,7 +365,7 @@ export default function Home() {
 
         <br></br>
 
-        {/* Lifestyle Group Partition Blocks */}
+        {/* Lifestyle Group */}
         <h2 className="text-3xl font-bold mb-5 tracking-tight">✨ Wants</h2>
         <div className="grid md:grid-cols-2 gap-4">
           {lifestyle.map((item) => (
