@@ -25,7 +25,8 @@ import {
   Check,
   AlertCircle,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Plus
 } from "lucide-react";
 
 interface BudgetConfig {
@@ -36,6 +37,14 @@ interface BudgetConfig {
   icon: any;
   description: string;
 }
+
+interface BreakdownItem {
+  id: string;
+  name: string;
+  amount: string;
+}
+
+type Breakdowns = Record<string, BreakdownItem[]>;
 
 const BUDGET_CONFIGS: BudgetConfig[] = [
   { name: "Housing & Utilities", type: "Essential", target: 40, metric: "max", icon: HomeIcon, description: "Rent/mortgage, electric, water, HVAC, internet, phone bills" },
@@ -53,16 +62,60 @@ const DEFAULT_TARGETS: Record<string, number> = BUDGET_CONFIGS.reduce(
   {}
 );
 
+// Suggested items per category, shown as quick-add chips. Every category also
+// gets an "Add your own" chip. Keys must match the BUDGET_CONFIGS names.
+const SUBCATEGORY_PRESETS: Record<string, string[]> = {
+  "Housing & Utilities": ["Rent/Mortgage", "Electric", "Wifi"],
+  "Food & Groceries": ["Grocery Store", "Online Orders", "Takeout"],
+  "Transportation": ["Gas", "Parking", "Public Transit"],
+  "Insurance": ["Health", "Home", "Auto"],
+  "Debt Payments": ["Student Loans", "Credit Cards", "Car Loan"],
+  "Savings": ["Emergency Fund", "High-Yield Savings", "Personal Savings"],
+  "Personal": ["Gym", "Clothes", "Music", "Nights Out", "Movies & Shows"],
+  "Investments": ["401(k)", "Roth IRA", "Brokerage"],
+};
+
+// Suggested income sources for the Monthly Income box.
+const INCOME_PRESETS = ["Main Job", "Side Income", "Dividends"];
+
 const MARQUEE_ICONS = [
   Wallet, DollarSign, PiggyBank, BarChart3, TrendingUp, Percent, 
   Briefcase, Coins, CreditCard, Gem, HomeIcon, Utensils
 ];
 
+const makeId = () =>
+  Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+
+// Used when loading saved items from localStorage.
+const isBreakdownItem = (row: any): row is BreakdownItem =>
+  !!row &&
+  typeof row.id === "string" &&
+  typeof row.name === "string" &&
+  typeof row.amount === "string";
+
+// Only rows with an amount above zero count toward the total. Until at
+// least one does, the field falls back to its manually entered amount.
+function summarizeBreakdown(items: BreakdownItem[] = []) {
+  let count = 0;
+  let total = 0;
+  items.forEach((row) => {
+    const value = parseFloat(row.amount) || 0;
+    if (value > 0) {
+      count += 1;
+      total += value;
+    }
+  });
+  return { count, total: Math.round(total * 100) / 100 };
+}
+
 export default function Home() {
   const [income, setIncome] = useState<string>("");
+  const [incomeSources, setIncomeSources] = useState<BreakdownItem[]>([]);
+  const [incomeOpen, setIncomeOpen] = useState(false);
   const [expenses, setExpenses] = useState<Record<string, string>>(() => 
     BUDGET_CONFIGS.reduce((acc, item) => ({ ...acc, [item.name]: "" }), {})
   );
+  const [breakdowns, setBreakdowns] = useState<Breakdowns>({});
   const [targets, setTargets] = useState<Record<string, number>>(DEFAULT_TARGETS);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draftTargets, setDraftTargets] = useState<Record<string, number>>(DEFAULT_TARGETS);
@@ -112,12 +165,54 @@ export default function Home() {
       }
     }
 
+    const savedBreakdowns = localStorage.getItem("budget-breakdowns");
+    if (savedBreakdowns) {
+      try {
+        const data = JSON.parse(savedBreakdowns);
+        const merged: Breakdowns = {};
+        BUDGET_CONFIGS.forEach((item) => {
+          const rows = data[item.name];
+          if (Array.isArray(rows)) {
+            merged[item.name] = rows.filter(isBreakdownItem);
+          }
+        });
+        setBreakdowns(merged);
+      } catch (e) {
+        console.error("Failed to parse local storage budget breakdowns", e);
+      }
+    }
+
+    const savedIncomeSources = localStorage.getItem("budget-income-sources");
+    if (savedIncomeSources) {
+      try {
+        const data = JSON.parse(savedIncomeSources);
+        if (Array.isArray(data)) {
+          setIncomeSources(data.filter(isBreakdownItem));
+        }
+      } catch (e) {
+        console.error("Failed to parse local storage income sources", e);
+      }
+    }
+
     setIsHydrated(true);
   }, []);
 
   useEffect(() => {
     localStorage.setItem("budget-data", JSON.stringify({ income, expenses }));
   }, [income, expenses]);
+
+  // Breakdowns and income sources are saved separately from budget-data so
+  // the existing saved shape is untouched. We wait for hydration so we never
+  // overwrite saved items with the empty initial state.
+  useEffect(() => {
+    if (!isHydrated) return;
+    localStorage.setItem("budget-breakdowns", JSON.stringify(breakdowns));
+  }, [breakdowns, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    localStorage.setItem("budget-income-sources", JSON.stringify(incomeSources));
+  }, [incomeSources, isHydrated]);
 
   // Lock background scroll while the settings panel is open, and let the
   // panel itself own its scroll region. Without this, touch/wheel input
@@ -141,16 +236,31 @@ export default function Home() {
     }
   }, [settingsOpen]);
 
-  const parsedIncome = parseFloat(income) || 0;
+  // Income is the sum of the income sources when any have amounts,
+  // otherwise the manually entered value.
+  const { count: incomeSourceCount, total: incomeSourceTotal } = summarizeBreakdown(incomeSources);
+  const isIncomeBreakdownActive = incomeSourceCount > 0;
+  const parsedIncome = isIncomeBreakdownActive ? incomeSourceTotal : parseFloat(income) || 0;
   const hasIncome = parsedIncome > 0;
 
   // Only show the "enter your income" prompt UI once we've confirmed (post
   // hydration) that the user genuinely has no saved income yet.
   const showIncomePrompt = isHydrated && !hasIncome;
 
+  // The amount each category contributes: the item total when the category
+  // has items with amounts, otherwise the manually entered value.
+  const categoryAmounts = useMemo(() => {
+    const result: Record<string, number> = {};
+    BUDGET_CONFIGS.forEach((item) => {
+      const { count, total } = summarizeBreakdown(breakdowns[item.name]);
+      result[item.name] = count > 0 ? total : parseFloat(expenses[item.name]) || 0;
+    });
+    return result;
+  }, [expenses, breakdowns]);
+
   const totalSpent = useMemo(() =>
-    Object.values(expenses).reduce((sum, value) => sum + (parseFloat(value) || 0), 0),
-    [expenses]
+    Object.values(categoryAmounts).reduce((sum, value) => sum + value, 0),
+    [categoryAmounts]
   );
 
   const moneyLeft = parsedIncome - totalSpent;
@@ -162,6 +272,10 @@ export default function Home() {
 
   const updateExpense = (name: string, value: string) => {
     setExpenses((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const updateBreakdown = (name: string, items: BreakdownItem[]) => {
+    setBreakdowns((prev) => ({ ...prev, [name]: items }));
   };
 
   const draftSum = useMemo(
@@ -279,27 +393,53 @@ export default function Home() {
           </label>
 
           <div className="flex items-center gap-3">
-            <div className="relative max-w-md flex-1">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium text-lg">$</span>
-              <input
-                type="number"
-                value={income}
-                onChange={(e) => setIncome(e.target.value)}
-                onFocus={() => setIncomeFocused(true)}
-                onBlur={() => setIncomeFocused(false)}
-                onWheel={(e) => e.currentTarget.blur()}
-                placeholder="4000"
-                className={`w-full bg-slate-800 border rounded-xl pl-8 pr-4 py-3 text-lg outline-none transition-all ${
-                  showIncomePrompt && !incomeFocused
-                    ? "border-indigo-500/50 focus:border-indigo-500"
-                    : "border-slate-700 focus:border-indigo-500"
-                }`}
+            <div className="flex items-stretch gap-2 max-w-md flex-1">
+              <div className="relative flex-1 min-w-0">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium text-lg">$</span>
+                <input
+                  type="number"
+                  value={isIncomeBreakdownActive ? String(incomeSourceTotal) : income}
+                  onChange={(e) => setIncome(e.target.value)}
+                  onFocus={() => setIncomeFocused(true)}
+                  onBlur={() => setIncomeFocused(false)}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  readOnly={isIncomeBreakdownActive}
+                  placeholder="4000"
+                  className={`w-full bg-slate-800 border rounded-xl pl-8 pr-4 py-3 text-lg outline-none transition-all ${
+                    showIncomePrompt && !incomeFocused
+                      ? "border-indigo-500/50 focus:border-indigo-500"
+                      : "border-slate-700 focus:border-indigo-500"
+                  } ${isIncomeBreakdownActive ? "text-slate-300 cursor-default" : ""}`}
+                />
+              </div>
+
+              <BreakdownToggle
+                open={incomeOpen}
+                onToggle={() => setIncomeOpen((prev) => !prev)}
+                count={incomeSourceCount}
+                name="Monthly Income"
               />
             </div>
             {showIncomePrompt && (
               <ArrowRight className="w-5 h-5 text-indigo-400 shrink-0 hidden sm:block animate-nudge-right" />
             )}
           </div>
+
+          {isIncomeBreakdownActive && (
+            <p className="text-indigo-400/80 text-xs mt-2 ml-1">
+              Calculated Income
+            </p>
+          )}
+
+          {incomeOpen && (
+            <div className="max-w-md mt-3">
+              <BreakdownPanel
+                items={incomeSources}
+                presets={INCOME_PRESETS}
+                onChange={setIncomeSources}
+              />
+            </div>
+          )}
         </div>
 
         {/* Row of metric cards */}
@@ -350,7 +490,7 @@ export default function Home() {
 
         {/* Essentials Group */}
         <h2 className="text-3xl font-bold mb-5 tracking-tight">🏠 Needs</h2>
-        <div className="grid md:grid-cols-2 gap-4 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
           {essentials.map((item) => (
             <ExpenseCard
               key={item.name}
@@ -359,6 +499,8 @@ export default function Home() {
               income={parsedIncome}
               value={expenses[item.name]}
               onChange={updateExpense}
+              breakdown={breakdowns[item.name] ?? []}
+              onBreakdownChange={updateBreakdown}
             />
           ))}
         </div>
@@ -367,7 +509,7 @@ export default function Home() {
 
         {/* Lifestyle Group */}
         <h2 className="text-3xl font-bold mb-5 tracking-tight">✨ Wants</h2>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {lifestyle.map((item) => (
             <ExpenseCard
               key={item.name}
@@ -376,6 +518,8 @@ export default function Home() {
               income={parsedIncome}
               value={expenses[item.name]}
               onChange={updateExpense}
+              breakdown={breakdowns[item.name] ?? []}
+              onBreakdownChange={updateBreakdown}
             />
           ))}
         </div>
@@ -480,20 +624,170 @@ function SummaryCard({ title, value, color = "text-white", icon: Icon }: { title
   );
 }
 
+// The small "+" button that sits next to an amount input. Shared by the
+// income box and the category cards. Shows a quiet count badge when the
+// panel is closed but items are in use.
+function BreakdownToggle({
+  open,
+  onToggle,
+  count,
+  name,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  count: number;
+  name: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-label={open ? `Hide ${name} items` : `Add items to ${name}`}
+      title={open ? "Hide items" : "Add items"}
+      className="relative shrink-0 w-12 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-slate-400 hover:text-indigo-400 hover:border-slate-600 transition-all"
+    >
+      <Plus className={`w-5 h-5 transition-transform duration-200 ${open ? "rotate-45" : ""}`} />
+      {count > 0 && !open && (
+        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-indigo-500 text-white text-[10px] font-bold">
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// The expandable list of items (rows plus quick-add chips). Shared by the
+// income box and the category cards. It only mounts while open, so its focus
+// state resets each time the panel is reopened.
+function BreakdownPanel({
+  items,
+  presets,
+  onChange,
+}: {
+  items: BreakdownItem[];
+  presets: string[];
+  onChange: (items: BreakdownItem[]) => void;
+}) {
+  const [focusTarget, setFocusTarget] = useState<{ id: string; field: "name" | "amount" } | null>(null);
+
+  const availablePresets = presets.filter(
+    (preset) =>
+      !items.some((row) => row.name.trim().toLowerCase() === preset.toLowerCase())
+  );
+
+  const addRow = (name: string) => {
+    const row: BreakdownItem = { id: makeId(), name, amount: "" };
+    onChange([...items, row]);
+    // Presets focus the amount, custom rows focus the name.
+    setFocusTarget({ id: row.id, field: name ? "amount" : "name" });
+  };
+
+  const updateRow = (id: string, patch: Partial<BreakdownItem>) => {
+    onChange(items.map((row) => (row.id === id ? { ...row, ...patch } : row)));
+  };
+
+  const removeRow = (id: string) => {
+    onChange(items.filter((row) => row.id !== id));
+  };
+
+  return (
+    <div className="rounded-xl bg-slate-800/40 border border-slate-800 p-3">
+      {items.length === 0 && (
+        <p className="text-slate-500 text-xs mb-3">
+          Pick an item below and we'll add it up for you.
+        </p>
+      )}
+
+      {items.length > 0 && (
+        <div className="space-y-2 mb-3">
+          {items.map((row) => (
+            <div key={row.id} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={row.name}
+                maxLength={30}
+                placeholder="Name"
+                aria-label="Item name"
+                autoFocus={focusTarget?.id === row.id && focusTarget.field === "name"}
+                onChange={(e) => updateRow(row.id, { name: e.target.value })}
+                className="w-full min-w-0 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500"
+              />
+              <div className="relative w-24 sm:w-28 shrink-0">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+                <input
+                  type="number"
+                  value={row.amount}
+                  placeholder="0"
+                  aria-label={`${row.name || "Item"} amount`}
+                  autoFocus={focusTarget?.id === row.id && focusTarget.field === "amount"}
+                  onChange={(e) => updateRow(row.id, { amount: e.target.value })}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-6 pr-2 py-2 text-sm outline-none transition-all focus:border-indigo-500"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => removeRow(row.id)}
+                aria-label={`Remove ${row.name || "item"}`}
+                className="shrink-0 p-1.5 text-slate-500 hover:text-red-400 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        {availablePresets.map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            onClick={() => addRow(preset)}
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:border-indigo-500/60 hover:text-indigo-300 transition-all"
+          >
+            <Plus className="w-3 h-3" />
+            {preset}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => addRow("")}
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full border border-dashed border-slate-700 text-slate-400 hover:border-indigo-500/60 hover:text-indigo-300 transition-all"
+        >
+          <Plus className="w-3 h-3" />
+          Add your own
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ExpenseCard({
   item,
   target,
   income,
   value,
   onChange,
+  breakdown,
+  onBreakdownChange,
 }: {
   item: BudgetConfig;
   target: number;
   income: number;
   value: string;
   onChange: (name: string, value: string) => void;
+  breakdown: BreakdownItem[];
+  onBreakdownChange: (name: string, items: BreakdownItem[]) => void;
 }) {
-  const amount = parseFloat(value) || 0;
+  // Expanded/collapsed isn't persisted on purpose, cards always start collapsed.
+  const [open, setOpen] = useState(false);
+
+  const { count: activeCount, total: breakdownTotal } = summarizeBreakdown(breakdown);
+  const isBreakdownActive = activeCount > 0;
+
+  const amount = isBreakdownActive ? breakdownTotal : parseFloat(value) || 0;
   const percentNumber = income > 0 ? (amount / income) * 100 : 0;
   const percent = percentNumber.toFixed(1);
   const Icon = item.icon;
@@ -548,17 +842,47 @@ function ExpenseCard({
           {item.description}
         </p>
 
-        <div className="relative mb-4">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">$</span>
-          <input
-            type="number"
-            placeholder="Enter amount"
-            value={value}
-            onChange={(e) => onChange(item.name, e.target.value)}
-            onWheel={(e) => e.currentTarget.blur()}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-4 py-3 text-base outline-none transition-all font-medium"
-          />
+        <div className="mb-4">
+          <div className="flex items-stretch gap-2">
+            <div className="relative flex-1 min-w-0">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">$</span>
+              <input
+                type="number"
+                placeholder="Enter amount"
+                value={isBreakdownActive ? String(breakdownTotal) : value}
+                onChange={(e) => onChange(item.name, e.target.value)}
+                onWheel={(e) => e.currentTarget.blur()}
+                readOnly={isBreakdownActive}
+                className={`w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-4 py-3 text-base outline-none transition-all font-medium ${
+                  isBreakdownActive ? "text-slate-300 cursor-default" : ""
+                }`}
+              />
+            </div>
+
+            <BreakdownToggle
+              open={open}
+              onToggle={() => setOpen((prev) => !prev)}
+              count={activeCount}
+              name={item.name}
+            />
+          </div>
+
+          {isBreakdownActive && (
+            <p className="text-indigo-400/80 text-xs mt-2 ml-1">
+              Calculated Total
+            </p>
+          )}
         </div>
+
+        {open && (
+          <div className="mb-4">
+            <BreakdownPanel
+              items={breakdown}
+              presets={SUBCATEGORY_PRESETS[item.name] ?? []}
+              onChange={(next) => onBreakdownChange(item.name, next)}
+            />
+          </div>
+        )}
 
         <div className="h-2.5 bg-slate-950 rounded-full overflow-hidden p-[1px] border border-slate-800/40">
           <div
